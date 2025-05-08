@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App</title>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="/icons/bootstrap-icons.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="position-relative min-vh-100 bg-dark text-white">
+    <div class="position-fixed bg-dark top-0 w-100 z-1">
+      <h1 class="text-center fs-1 m-3 rounded-3 py-2 text-uppercase">
+        Weather App
+      </h1>
+
+      <form
+        id="weather-form"
+        action="/getWeather"
+        method="POST"
+        class="w-100 bg-dark p-3 position-absolute start-50 translate-middle-x"
+      >
+        <div class="input-group w-50 mx-auto">
+          <button
+            class="rounded-start btn btn-danger"
+            type="button"
+            id="remove-search-term"
+          >
+            <i class="bi bi-x-lg"></i>
+          </button>
+          <input
+            type="search"
+            name="country-search"
+            id="country-search"
+            class="form-control border-primary"
+            placeholder="Search for a country"
+            aria-label="Search for a country"
+            aria-describedby="countryInput"
+          />
+          <button
+            class="btn btn-outline-primary"
+            disabled="true"
+            id="search-btn"
+            type="submit"
+          >
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <ul
+      style="top: 170px; left: 49%; list-style: none"
+      class="d-flex flex-column gap-2 w-50 rounded position-absolute text-dark-emphasis translate-middle-x"
+      id="countries-list"
+    ></ul>
+    <div class="position-absolute z-2 top-50 start-50 translate-middle">
+      <h2 id="weather-result"></h2>
+      <div id="weather-icon"></div>
+    </div>
+    <script type="module">
+      import { countries } from "./countries.js"
+      const form = document.getElementById("weather-form")
+      const countriesList = document.getElementById("countries-list")
+      const searchInput = document.getElementById("country-search")
+      const weatherResult = document.getElementById("weather-result")
+      const weatherIcon = document.getElementById("weather-icon")
+      const searchBtn = document.getElementById("search-btn")
+      const removeSearchTerm = document.getElementById("remove-search-term")
+
+      removeSearchTerm.onclick = () => {
+        searchInput.value = ""
+        countriesList.innerHTML = ""
+        searchInput.removeAttribute("readonly")
+        searchBtn.disabled = true
+      }
+      countriesList.addEventListener("click", (e) => {
+        function selectCountry(name) {
+          searchInput.value = name
+          searchInput.setAttribute("readonly", "true")
+          searchBtn.disabled = false
+          countriesList.innerHTML = ""
+        }
+        if (e.target.tagName == "LI") {
+          selectCountry(e.target.textContent)
+        }
+      })
+      function showCountriesList(e) {
+        weatherIcon.innerHTML = ""
+        weatherResult.innerHTML = ""
+        const search = e.target.value.toLowerCase().trim()
+        if (search === "") {
+          searchBtn.disabled = true
+          countriesList.innerHTML = ""
+          return
+        }
+
+        const htmlList = countries
+          .map((country) => {
+            if (country.name.toLowerCase().includes(search)) {
+              return `<li style='cursor: pointer' class='list-item fs-3 border-bottom border-white' data-code=${country.code} >${country.name}</li>`
+            }
+          })
+          .join("")
+
+        countriesList.innerHTML = htmlList
+      }
+      function debounce(func, delay) {
+        let timerId
+        return function (...args) {
+          clearTimeout(timerId)
+          timerId = setTimeout(() => {
+            func(...args)
+          }, delay)
+        }
+      }
+
+      const debouncedSearch = debounce(showCountriesList, 500)
+      searchInput.addEventListener("input", debouncedSearch)
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault()
+
+        fetch("/getWeather", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            city: searchInput.value,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.error) return console.error(data.error)
+            weatherResult.textContent = `Weather in ${data.location.country}: ${data.current.condition.text}`
+            weatherIcon.innerHTML = `<img src="${data.current.condition.icon}" alt="Weather Icon" />`
+          })
+          .catch((error) => console.error("Error:", error))
+      })
+    </script>
+  </body>
+</html>
