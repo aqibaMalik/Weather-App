@@ -1,7 +1,8 @@
 ## Installation
 
 ```
-$ npm install
+$ git clone https://github.com/aqibaMalik/Weather-App
+$ cd Weather-App
 ```
 
 ## App Configuration
@@ -12,6 +13,11 @@ Get Your OpenWeatherMap API KEY here: https://www.weatherapi.com/
 
 - Create `.env` file in root of the project.
 - Write the key you got from above url. _eg_  API_Key = <your_apikey>
+
+```
+$ npm install
+$ npm start/your script
+```
 
 ## Preview
 
