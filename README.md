@@ -7,7 +7,7 @@ $ cd Weather-App
 
 ## App Configuration
 
-Get Your OpenWeatherMap API KEY here: https://www.weatherapi.com/
+Get Your Weather API KEY here: https://www.weatherapi.com/
 
 ⚠️ **Important Instructions** ⚠️:
 
